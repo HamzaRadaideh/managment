@@ -15,8 +15,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def register(
     user: UserCreate,
     auth_service: AuthService = Depends(get_auth_service),
-    db: AsyncSession = Depends(get_async_session) 
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
+    # The service already has its repository injected via get_auth_service
     registered_user = await auth_service.register_user(user)
     return registered_user
 
@@ -26,7 +27,6 @@ async def login_query(username: str, password: str, auth_service: AuthService = 
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     return auth_service.create_token_for_user(user)
-
 
 @router.post("/login", response_model=Token)
 async def login(
@@ -41,3 +41,4 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return auth_service.create_token_for_user(user)
+

@@ -6,9 +6,9 @@ from app.schemas.contracts.collections_dtos import CollectionCreate, CollectionO
 from app.schemas.models.users_models import User
 from app.schemas.database import get_async_session
 from app.utility.auth import get_current_user
-from app.api.repositories.collections_repositories import get_collection_repository
+# from app.api.repositories.collections_repositories import get_collection_repository # Not needed directly in endpoints
 from app.api.services.collections_services import get_collection_service
-from app.api.repositories.collections_repositories import CollectionRepository
+# from app.api.repositories.collections_repositories import CollectionRepository # Not needed directly in endpoints
 from app.api.services.collections_services import CollectionService
 
 router = APIRouter(prefix="/collections", tags=["collections"])
@@ -18,10 +18,10 @@ async def list_collections(
     type: str = None,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    collection_repo: CollectionRepository = Depends(get_collection_repository),
-    db: AsyncSession = Depends(get_async_session)
+    # collection_repo: CollectionRepository = Depends(get_collection_repository), # Remove
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
-    collection_service.collection_repo = collection_repo # Inject repo
+    # collection_service.collection_repo = collection_repo # Remove
     return await collection_service.get_user_collections(current_user.id, type)
 
 @router.get("/{collection_id}", response_model=CollectionWithItems)
@@ -29,10 +29,10 @@ async def get_collection(
     collection_id: int,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    collection_repo: CollectionRepository = Depends(get_collection_repository),
-    db: AsyncSession = Depends(get_async_session)
+    # collection_repo: CollectionRepository = Depends(get_collection_repository), # Remove
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
-    collection_service.collection_repo = collection_repo
+    # collection_service.collection_repo = collection_repo # Remove
     # Request to preload items
     return await collection_service.get_user_collection_by_id(
         current_user.id, collection_id, preload_items=True
@@ -43,10 +43,10 @@ async def create_collection(
     collection: CollectionCreate,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    collection_repo: CollectionRepository = Depends(get_collection_repository),
-    db: AsyncSession = Depends(get_async_session)
+    # collection_repo: CollectionRepository = Depends(get_collection_repository), # Remove
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
-    collection_service.collection_repo = collection_repo
+    # collection_service.collection_repo = collection_repo # Remove
     return await collection_service.create_collection_for_user(current_user.id, collection)
 
 @router.put("/{collection_id}", response_model=CollectionOut)
@@ -55,10 +55,10 @@ async def update_collection(
     collection_update: CollectionCreate,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    collection_repo: CollectionRepository = Depends(get_collection_repository),
-    db: AsyncSession = Depends(get_async_session)
+    # collection_repo: CollectionRepository = Depends(get_collection_repository), # Remove
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
-    collection_service.collection_repo = collection_repo
+    # collection_service.collection_repo = collection_repo # Remove
     return await collection_service.update_user_collection(
         current_user.id, collection_id, collection_update
     )
@@ -68,10 +68,10 @@ async def delete_collection(
     collection_id: int,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    collection_repo: CollectionRepository = Depends(get_collection_repository),
-    db: AsyncSession = Depends(get_async_session)
+    # collection_repo: CollectionRepository = Depends(get_collection_repository), # Remove
+    # db: AsyncSession = Depends(get_async_session) # Not needed if service handles persistence
 ):
-    collection_service.collection_repo = collection_repo
+    # collection_service.collection_repo = collection_repo # Remove
     await collection_service.delete_user_collection(current_user.id, collection_id)
-    return 
+    return
 
