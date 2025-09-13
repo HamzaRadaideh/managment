@@ -1,13 +1,13 @@
 # app/api/services/notes_services.py
 from fastapi import Depends, HTTPException, status
-
 from app.api.repositories.notes_repositories import (
     NoteRepository,
     get_note_repository,
 )
 from app.schemas.models.notes_models import Note
+from app.schemas.models.collections_models import Collection # Import Collection model
 from app.schemas.contracts.notes_dtos import NoteCreate, NoteBase
-
+from app.schemas.enums.collections_types import CollectionType # Import the enum
 
 class NoteService:
     def __init__(self, note_repo: NoteRepository):
@@ -29,13 +29,19 @@ class NoteService:
         tag_ids = data.pop("tag_ids", None)
         data["user_id"] = user_id
 
-        # Validate collection if provided
+        # Validate collection ownership AND type if provided
         if note_create.collection_id:
-            owned = await self.note_repo.get_collection_by_id_and_user(note_create.collection_id, user_id)
-            if not owned:
+            owned_collection: Collection = await self.note_repo.get_collection_by_id_and_user(note_create.collection_id, user_id) # Annotate type
+            if not owned_collection:
                 raise HTTPException(
                     status_code=404, detail="Collection not found or not owned by user"
                 )
+            # --- NEW TYPE CHECK ---
+            if owned_collection.type == CollectionType.TASKS_ONLY:
+                 raise HTTPException(
+                    status_code=400, detail=f"Cannot add a Note to a Collection of type '{CollectionType.TASKS_ONLY.value}'."
+                )
+            # --- END NEW TYPE CHECK ---
 
         # Validate tags if provided
         if tag_ids is not None:
@@ -65,13 +71,26 @@ class NoteService:
         update_data = note_update.dict(exclude_unset=True)
         tag_ids_to_set = update_data.pop("tag_ids", None)
 
-        # Validate collection if changed
-        if "collection_id" in update_data and update_data["collection_id"]:
-            owned = await self.note_repo.get_collection_by_id_and_user(update_data["collection_id"], user_id)
-            if not owned:
-                raise HTTPException(
-                    status_code=404, detail="Collection not found or not owned by user"
+        # Validate collection ownership AND type if changed/added
+         # Check if collection_id is being set or changed (present in update_data)
+        if "collection_id" in update_data:
+            # This covers setting to a new ID or explicitly setting to None
+            new_collection_id = update_data["collection_id"]
+            if new_collection_id: # If it's being set to a non-null ID
+                owned_collection: Collection = await self.note_repo.get_collection_by_id_and_user(
+                    new_collection_id, user_id
                 )
+                if not owned_collection:
+                    raise HTTPException(
+                        status_code=404, detail="Collection not found or not owned by user"
+                    )
+                # --- NEW TYPE CHECK ---
+                if owned_collection.type == CollectionType.TASKS_ONLY:
+                    raise HTTPException(
+                        status_code=400, detail=f"Cannot add a Note to a Collection of type '{CollectionType.TASKS_ONLY.value}'."
+                    )
+                # --- END NEW TYPE CHECK ---
+            # If new_collection_id is None, it's fine (removing from collection), so no check needed.
 
         # Validate tags if provided
         if tag_ids_to_set is not None:
@@ -105,4 +124,3 @@ class NoteService:
 
 def get_note_service(note_repo: NoteRepository = Depends(get_note_repository)) -> NoteService:
     return NoteService(note_repo)
-

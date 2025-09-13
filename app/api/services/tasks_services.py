@@ -1,13 +1,13 @@
 # app/api/services/tasks_services.py
 from fastapi import Depends, HTTPException, status
-
 from app.api.repositories.tasks_repositories import (
     TaskRepository,
     get_task_repository,
 )
 from app.schemas.models.tasks_models import Task
+from app.schemas.models.collections_models import Collection # Import Collection model
 from app.schemas.contracts.tasks_dtos import TaskCreate, TaskBase
-
+from app.schemas.enums.collections_types import CollectionType # Import the enum
 
 class TaskService:
     def __init__(self, task_repo: TaskRepository):
@@ -38,15 +38,21 @@ class TaskService:
         tag_ids = data.pop("tag_ids", None)
         data["user_id"] = user_id
 
-        # Validate collection ownership if provided
+        # Validate collection ownership AND type if provided
         if task_create.collection_id:
-            owned = await self.task_repo.get_collection_by_id_and_user(
+            owned_collection: Collection = await self.task_repo.get_collection_by_id_and_user( # Annotate type
                 task_create.collection_id, user_id
             )
-            if not owned:
+            if not owned_collection:
                 raise HTTPException(
                     status_code=404, detail="Collection not found or not owned by user"
                 )
+            # --- NEW TYPE CHECK ---
+            if owned_collection.type == CollectionType.NOTES_ONLY:
+                 raise HTTPException(
+                    status_code=400, detail=f"Cannot add a Task to a Collection of type '{CollectionType.NOTES_ONLY.value}'."
+                )
+            # --- END NEW TYPE CHECK ---
 
         # Validate tags if provided
         if tag_ids is not None:
@@ -78,15 +84,26 @@ class TaskService:
         update_data = task_update.dict(exclude_unset=True)
         tag_ids_to_set = update_data.pop("tag_ids", None)
 
-        # Validate collection if changed
-        if "collection_id" in update_data and update_data["collection_id"]:
-            owned = await self.task_repo.get_collection_by_id_and_user(
-                update_data["collection_id"], user_id
-            )
-            if not owned:
-                raise HTTPException(
-                    status_code=404, detail="Collection not found or not owned by user"
+        # Validate collection ownership AND type if changed/added
+        # Check if collection_id is being set or changed (present in update_data)
+        if "collection_id" in update_data:
+             # This covers setting to a new ID or explicitly setting to None
+            new_collection_id = update_data["collection_id"]
+            if new_collection_id: # If it's being set to a non-null ID
+                owned_collection: Collection = await self.task_repo.get_collection_by_id_and_user(
+                    new_collection_id, user_id
                 )
+                if not owned_collection:
+                    raise HTTPException(
+                        status_code=404, detail="Collection not found or not owned by user"
+                    )
+                 # --- NEW TYPE CHECK ---
+                if owned_collection.type == CollectionType.NOTES_ONLY:
+                    raise HTTPException(
+                        status_code=400, detail=f"Cannot add a Task to a Collection of type '{CollectionType.NOTES_ONLY.value}'."
+                    )
+                # --- END NEW TYPE CHECK ---
+            # If new_collection_id is None, it's fine (removing from collection), so no check needed.
 
         # Validate tags if provided
         if tag_ids_to_set is not None:
@@ -121,4 +138,3 @@ class TaskService:
 
 def get_task_service(task_repo: TaskRepository = Depends(get_task_repository)) -> TaskService:
     return TaskService(task_repo)
-
