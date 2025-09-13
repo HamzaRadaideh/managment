@@ -74,5 +74,5 @@ async def delete_task(
 ):
     task_service.task_repo = task_repo
     await task_service.delete_user_task(current_user.id, task_id)
-    return # Explicitly return nothing for 204
+    return 
 

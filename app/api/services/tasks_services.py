@@ -111,6 +111,13 @@ class TaskService:
         await self.task_repo.db.refresh(task, attribute_names=["tags"])  # tags
         return task
 
+    async def delete_user_task(self, user_id: int, task_id: int) -> None:
+        # Ensure the task exists and belongs to the user
+        task = await self.get_user_task_by_id(user_id, task_id)
+        # Delete via repository (repo currently deletes+flushes)
+        await self.task_repo.delete_task(task)
+        # Persist deletion
+        await self.task_repo.db.commit()
 
 def get_task_service(task_repo: TaskRepository = Depends(get_task_repository)) -> TaskService:
     return TaskService(task_repo)

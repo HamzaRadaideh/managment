@@ -98,6 +98,12 @@ class CollectionService:
         await self.collection_repo.db.refresh(collection, attribute_names=["tags"])
         return collection
 
+    async def delete_user_collection(self, user_id: int, collection_id: int) -> None:
+        # Ensure the collection exists and belongs to the user
+        collection = await self.get_user_collection_by_id(user_id, collection_id)
+        # Deleting the collection will cascade to tasks/notes due to the model relationship config
+        await self.collection_repo.delete_collection(collection)  # repo deletes+flushes
+        await self.collection_repo.db.commit()   
 
 def get_collection_service(
     collection_repo: CollectionRepository = Depends(get_collection_repository),

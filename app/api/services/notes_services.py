@@ -95,6 +95,13 @@ class NoteService:
         await self.note_repo.db.refresh(note, attribute_names=["tags"])    # tags
         return note
 
+    async def delete_user_note(self, user_id: int, note_id: int) -> None:
+        # Ensure the note exists and belongs to the user
+        note = await self.get_user_note_by_id(user_id, note_id)
+        # Delete via repository (repo currently deletes+flushes)
+        await self.note_repo.delete_note(note)
+        # Persist deletion
+        await self.note_repo.db.commit()
 
 def get_note_service(note_repo: NoteRepository = Depends(get_note_repository)) -> NoteService:
     return NoteService(note_repo)
