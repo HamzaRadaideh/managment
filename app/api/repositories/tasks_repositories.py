@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional, Sequence
 from app.schemas.database import get_async_session
+from app.schemas.models.tags_models import Tag
 from app.schemas.models.tasks_models import Task
 from app.schemas.models.collections_models import Collection
 
@@ -64,7 +65,18 @@ class TaskRepository:
         )
         return result.scalar_one_or_none()
 
-# Dependency
+    async def get_tags_by_ids_and_user(self, tag_ids: list[int], user_id: int) -> Sequence[Tag]:
+        """Fetch tags by IDs ensuring they belong to the user."""
+        if not tag_ids:
+            return [] # Handle empty list
+        stmt = select(Tag).where(Tag.id.in_(tag_ids), Tag.user_id == user_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def set_task_tags(self, task: Task, tags: Sequence[Tag]):
+        """Set the tags for a task, replacing existing ones."""
+        task.tags = list(tags)
+
 def get_task_repository(
     db: AsyncSession = Depends(get_async_session)
 ) -> TaskRepository:

@@ -17,6 +17,7 @@ class TaskBase(BaseModel):
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
     collection_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
 
 class TaskCreate(TaskBase):
     pass

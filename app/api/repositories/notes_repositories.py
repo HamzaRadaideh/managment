@@ -6,6 +6,7 @@ from typing import List, Optional, Sequence
 from app.schemas.database import get_async_session
 from app.schemas.models.notes_models import Note
 from app.schemas.models.collections_models import Collection
+from app.schemas.models.tags_models import Tag
 
 class NoteRepository:
     def __init__(self, db: AsyncSession):
@@ -51,7 +52,18 @@ class NoteRepository:
         )
          return result.scalar_one_or_none()
 
-# Dependency
+    async def get_tags_by_ids_and_user(self, tag_ids: list[int], user_id: int) -> Sequence[Tag]:
+        """Fetch tags by IDs ensuring they belong to the user."""
+        if not tag_ids:
+            return []
+        stmt = select(Tag).where(Tag.id.in_(tag_ids), Tag.user_id == user_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+    async def set_note_tags(self, note: Note, tags: Sequence[Tag]):
+        """Set the tags for a note, replacing existing ones."""
+        note.tags = list(tags)
+
 def get_note_repository(
     db: AsyncSession = Depends(get_async_session)
 ) -> NoteRepository:

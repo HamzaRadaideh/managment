@@ -15,6 +15,7 @@ class CollectionBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None
     type: CollectionType = CollectionType.MIXED
+    tag_ids: Optional[List[int]] = None
 
 class CollectionCreate(CollectionBase):
     pass

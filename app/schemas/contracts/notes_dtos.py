@@ -12,6 +12,7 @@ class NoteBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
     collection_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
 
 class NoteCreate(NoteBase):
     pass
