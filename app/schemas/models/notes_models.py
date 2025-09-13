@@ -17,7 +17,12 @@ class Note(Base):
     # Relationships (using string names for models and association tables)
     user = relationship("User", back_populates="notes")
     collection = relationship("Collection", back_populates="notes")
-    tags = relationship("Tag", secondary="tag_note_association", back_populates="notes")
+    tags = relationship("Tag", secondary="tag_note_association",
+                        back_populates="notes", lazy="selectin")
+
+    @property
+    def tag_ids(self) -> list[int]:
+        return [t.id for t in (self.tags or [])]
 
     def __repr__(self):
         return f"<Note(id={self.id}, title='{self.title}')>"

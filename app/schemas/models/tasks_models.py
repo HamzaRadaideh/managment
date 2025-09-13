@@ -21,7 +21,12 @@ class Task(Base):
     # Relationships (using string names for models and association tables)
     user = relationship("User", back_populates="tasks")
     collection = relationship("Collection", back_populates="tasks")
-    tags = relationship("Tag", secondary="tag_task_association", back_populates="tasks")
+    tags = relationship("Tag", secondary="tag_task_association",
+                        back_populates="tasks", lazy="selectin")
+
+    @property
+    def tag_ids(self) -> list[int]:
+        return [t.id for t in (self.tags or [])]
 
     def __repr__(self):
         return f"<Task(id={self.id}, title='{self.title}', status='{self.status}')>"

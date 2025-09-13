@@ -19,11 +19,16 @@ class Collection(Base):
     user = relationship("User", back_populates="collections")
     tasks = relationship("Task", back_populates="collection", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="collection", cascade="all, delete-orphan")
-    tags = relationship("Tag", secondary="tag_collection_association", back_populates="collections")
+    tags = relationship("Tag", secondary="tag_collection_association",
+                        back_populates="collections", lazy="selectin")
 
     __table_args__ = (
         UniqueConstraint('user_id', 'title', name='unique_user_collection_title'),
     )
+    
+    @property
+    def tag_ids(self) -> list[int]:
+        return [t.id for t in (self.tags or [])]
 
     def __repr__(self):
         return f"<Collection(id={self.id}, title='{self.title}', type='{self.type}')>"
