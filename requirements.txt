@@ -9,4 +9,5 @@ aiosqlite
 pydantic[email]
 bcrypt
 passlib[bcrypt]
+jinja2
 python-multipart

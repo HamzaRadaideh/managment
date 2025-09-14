@@ -1,0 +1,31 @@
+{
+  "name": "managment-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild": "node -e \"require('fs').mkdirSync('app/static/dist/js',{recursive:true})\"",
+    "build:css": "tailwindcss -i app/static/css/styles.css -o app/static/dist/styles.css --minify",
+    "build:ts": "esbuild app/static/src/main.ts --bundle --minify --sourcemap --outfile=app/static/dist/js/main.js --platform=browser --format=esm --target=es2018",
+    "build": "npm run build:css && npm run build:ts",
+    "dev:css": "tailwindcss -i app/static/css/styles.css -o app/static/dist/styles.css --watch",
+    "dev:ts": "esbuild app/static/src/main.ts --bundle --sourcemap --outfile=app/static/dist/js/main.js --platform=browser --format=esm --target=es2018 --watch",
+    "dev": "concurrently -k \"npm:dev:css\" \"npm:dev:ts\""
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "@tailwindcss/typography": "^0.5.15",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.23.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  },
+  "browserslist": [
+    "defaults"
+  ]
+}

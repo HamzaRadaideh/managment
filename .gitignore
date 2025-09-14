@@ -1,8 +1,69 @@
-venv
-__pycache__/
-__pycache__
-*.pyc
+# --- Python ---
+venv/
+.venv/
+env/
+ENV/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+.pytype/
+.python-version
 
+# Test/coverage caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Local databases & state
 data.db
+*.db
+*.sqlite
+*.sqlite3
 
+# Environment & secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Node/Frontend ---
+node_modules/
+# Built assets (we rebuild on deploy)
+app/static/dist/
+dist/
+# Legacy bundle outputs (if any linger)
+app/static/js/bundle.js
+app/static/js/bundle.js.map
+# Tailwind output if you ever write here
+app/static/css/app.css
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Tooling
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS-specific
+Icon?
+Desktop.ini
+
+# Project-local helper files not needed in git
+repo_tree.txt
+files.txt
