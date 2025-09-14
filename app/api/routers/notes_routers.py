@@ -1,5 +1,5 @@
 # app/api/routers/notes_routers.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.schemas.contracts.notes_dtos import NoteCreate, NoteOut, NoteBase
@@ -12,6 +12,36 @@ from app.api.services.notes_services import get_note_service
 from app.api.services.notes_services import NoteService
 
 router = APIRouter(prefix="/notes", tags=["notes"])
+
+@router.get("/search", response_model=List[NoteOut]) # Use NoteOut for consistent serialization
+async def search_notes(
+    q: str = Query(..., alias="q", min_length=2, description="Search term for title/description"),
+    collection_id: int = None,
+    skip: int = Query(0, ge=0, description="Number of results to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of results to return"), # Reasonable limit
+    current_user: User = Depends(get_current_user),
+    note_service: NoteService = Depends(get_note_service),
+):
+    """
+    Search for notes belonging to the current user.
+
+    Query Parameters:
+    - q: The search term (required, min 2 chars).
+    - collection_id: Filter by collection ID.
+    - skip: Number of results to skip (for pagination).
+    - limit: Maximum number of results to return (max 100).
+    """
+    # Call the service method
+    notes = await note_service.search_user_notes(
+        user_id=current_user.id,
+        query=q,
+        collection_id=collection_id,
+    )
+
+    # Apply pagination in-memory
+    paginated_notes = notes[skip : skip + limit]
+
+    return paginated_notes
 
 @router.get("/", response_model=List[NoteOut])
 async def list_notes(
