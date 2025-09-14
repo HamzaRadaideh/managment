@@ -92,6 +92,49 @@ class CollectionRepository:
 
         await self.db.flush()
 
+    async def search_collections(
+        self,
+        user_id: int,
+        query: str,
+        type_filter: Optional[str] = None, # Maps to CollectionType enum string value
+    ) -> Sequence[Collection]:
+        """
+        Search for collections belonging to a user, with an optional type filter and text search.
+
+        Args:
+            user_id: The ID of the user whose collections to search.
+            query: The search term for title/description (case-insensitive, infix).
+            type_filter: Optional filter for collection type (e.g., 'mixed', 'tasks-only').
+
+        Returns:
+            A sequence of Collection objects matching the criteria.
+        """
+        stmt = (
+            select(Collection)
+            .where(Collection.user_id == user_id)
+            .options(selectinload(Collection.tags)) # Ensure tags are loaded
+        )
+
+        # Apply type filter
+        if type_filter is not None:
+            stmt = stmt.where(Collection.type == type_filter)
+
+        # Apply text search (case-insensitive infix match on title)
+        # Optionally include description: (Collection.title.ilike(...) | Collection.description.ilike(...))
+        if query:
+            search_term = f"%{query}%"
+            stmt = stmt.where(Collection.title.ilike(search_term))
+            # If you want to search description too:
+            # stmt = stmt.where(
+            #     (Collection.title.ilike(search_term)) |
+            #     (Collection.description.ilike(search_term))
+            # )
+
+        # Order results (e.g., by last updated, descending)
+        stmt = stmt.order_by(Collection.updated_at.desc())
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
 def get_collection_repository(db: AsyncSession = Depends(get_async_session)) -> CollectionRepository:
     return CollectionRepository(db)
