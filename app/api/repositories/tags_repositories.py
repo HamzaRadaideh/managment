@@ -33,25 +33,27 @@ class TagRepository:
     async def create_tag(self, tag_data: dict) -> Tag:
         db_tag = Tag(**tag_data)
         self.db.add(db_tag)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(db_tag)
         return db_tag
 
     async def update_tag(self, tag: Tag, title: str):
         tag.title = title
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(tag)
         return tag
 
     async def delete_tag(self, tag: Tag):
         await self.db.delete(tag)
-        await self.db.commit()
+        await self.db.flush()
 
 
     async def search_tags(
         self,
         user_id: int,
         query: str,
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> Sequence[Tag]:
         """
         Search for tags belonging to a user by title (case-insensitive, infix).
@@ -72,7 +74,11 @@ class TagRepository:
 
         # Order results (e.g., by last updated, descending, or alphabetically)
         stmt = stmt.order_by(Tag.updated_at.desc()) # Or Tag.title.asc()
-
+        if skip is not None:
+            stmt = stmt.offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
+            
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

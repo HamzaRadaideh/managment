@@ -144,6 +144,8 @@ class TaskService:
         status: Optional[str] = None,
         priority: Optional[str] = None,
         collection_id: Optional[int] = None,
+        skip: int | None = None,
+        limit: int | None = None
     ) -> list[Task]:
         """
         Service method to search tasks for a user with validation.
@@ -175,6 +177,8 @@ class TaskService:
             status=status,
             priority=priority,
             collection_id=collection_id,
+            skip=skip, 
+            limit=limit
         )
         return list(tasks)
 

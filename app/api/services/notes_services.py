@@ -128,6 +128,8 @@ class NoteService:
         user_id: int,
         query: str,
         collection_id: Optional[int] = None,
+        skip: int | None = None,
+        limit: int | None = None
     ) -> list[Note]:
         """
         Service method to search notes for a user with validation.
@@ -155,6 +157,8 @@ class NoteService:
             user_id=user_id,
             query=query.strip(), # Pass the stripped query
             collection_id=collection_id,
+            skip=skip, 
+            limit=limit
         )
         return list(notes)
 

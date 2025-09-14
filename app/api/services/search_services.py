@@ -61,26 +61,12 @@ class SearchService:
 
         stripped_query = query.strip()
 
-        # --- Call individual search methods concurrently ---
-        # Note: We pass None for filters to get all types for that entity
-        tasks_future = self.task_service.search_user_tasks(
-            user_id=user_id, query=stripped_query, status=None, priority=None, collection_id=None
+        tasks_results, notes_results, collections_results, tags_results = await asyncio.gather(
+            self.task_service.search_user_tasks(user_id, stripped_query, None, None, None),
+            self.note_service.search_user_notes(user_id, stripped_query, None),
+            self.collection_service.search_user_collections(user_id, stripped_query, None),
+            self.tag_service.search_user_tags(user_id, stripped_query),
         )
-        notes_future = self.note_service.search_user_notes(
-            user_id=user_id, query=stripped_query, collection_id=None
-        )
-        collections_future = self.collection_service.search_user_collections(
-            user_id=user_id, query=stripped_query, type_filter=None
-        )
-        tags_future = self.tag_service.search_user_tags(
-            user_id=user_id, query=stripped_query
-        )
-
-        # --- Await all concurrently ---
-        tasks_results: List = await tasks_future # Type hint for clarity
-        notes_results: List = await notes_future
-        collections_results: List = await collections_future
-        tags_results: List = await tags_future
 
         # --- Apply limit per type ---
         limited_tasks_orm = tasks_results[:limit_per_type]

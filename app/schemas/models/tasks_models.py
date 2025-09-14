@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.schemas.enums.tasks_priorties import TaskPriority
+from app.schemas.enums.tasks_priorities import TaskPriority
 from app.schemas.enums.tasks_status import TaskStatus
 from app.schemas.database import Base
 

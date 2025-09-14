@@ -5,7 +5,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
-from app.schemas.enums.tasks_priorties import TaskPriority
+from app.schemas.enums.tasks_priorities import TaskPriority
 from app.schemas.enums.tasks_status import TaskStatus
 from app.schemas.contracts.tags_dtos import TagOut
 

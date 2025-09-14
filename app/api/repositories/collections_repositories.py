@@ -96,7 +96,9 @@ class CollectionRepository:
         self,
         user_id: int,
         query: str,
-        type_filter: Optional[str] = None, # Maps to CollectionType enum string value
+        type_filter: Optional[str] = None,
+        skip: int | None = None,
+        limit: int | None = None
     ) -> Sequence[Collection]:
         """
         Search for collections belonging to a user, with an optional type filter and text search.
@@ -132,7 +134,10 @@ class CollectionRepository:
 
         # Order results (e.g., by last updated, descending)
         stmt = stmt.order_by(Collection.updated_at.desc())
-
+        if skip is not None:
+            stmt = stmt.offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

@@ -30,7 +30,10 @@ class TagService:
 
         tag_data = tag_create.dict()
         tag_data['user_id'] = user_id
-        return await self.tag_repo.create_tag(tag_data)
+        tag = await self.tag_repo.create_tag(tag_data)
+        await self.tag_repo.db.commit()
+        await self.tag_repo.db.refresh(tag)
+        return tag
 
     async def update_user_tag(
         self,
@@ -52,16 +55,23 @@ class TagService:
                     detail="Tag with this title already exists for the user"
                 )
 
-        return await self.tag_repo.update_tag(tag, tag_update.title)
+        tag = await self.tag_repo.update_tag(tag, tag_update.title)  # flush()
+        await self.tag_repo.db.commit()
+        await self.tag_repo.db.refresh(tag)
+        return tag
+    
 
     async def delete_user_tag(self, user_id: int, tag_id: int):
         tag = await self.get_user_tag_by_id(user_id, tag_id)
         await self.tag_repo.delete_tag(tag)
+        await self.tag_repo.db.commit()
 
     async def search_user_tags(
         self,
         user_id: int,
         query: str,
+        skip: int | None = None,
+        limit: int | None = None
     ) -> list[Tag]:
         """
         Service method to search tags for a user with validation.
@@ -86,7 +96,9 @@ class TagService:
         # Delegate to the repository
         tags = await self.tag_repo.search_tags(
             user_id=user_id,
-            query=query.strip(), # Pass the stripped query
+            query=query.strip(), 
+            skip=skip, 
+            limit=limit
         )
         return list(tags)
 

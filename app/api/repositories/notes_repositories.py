@@ -96,6 +96,8 @@ class NoteRepository:
         user_id: int,
         query: str,
         collection_id: Optional[int] = None,
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> Sequence[Note]:
         """
         Search for notes belonging to a user, with an optional collection filter and text search.
@@ -128,7 +130,10 @@ class NoteRepository:
 
         # Order results (e.g., by last updated, descending)
         stmt = stmt.order_by(Note.updated_at.desc())
-
+        if skip is not None:
+            stmt = stmt.offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

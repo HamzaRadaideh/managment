@@ -106,6 +106,8 @@ class TaskRepository:
         status: Optional[str] = None,
         priority: Optional[str] = None,
         collection_id: Optional[int] = None,
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> Sequence[Task]:
         """
         Search for tasks belonging to a user, with optional filters and text search.
@@ -154,7 +156,10 @@ class TaskRepository:
 
         # Order results (e.g., by last updated, descending)
         stmt = stmt.order_by(Task.updated_at.desc())
-
+        if skip is not None:
+            stmt = stmt.offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

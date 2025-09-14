@@ -110,7 +110,9 @@ class CollectionService:
         self,
         user_id: int,
         query: str,
-        type_filter: str | None = None, # Accepts the string value of CollectionType enum
+        type_filter: str | None = None,
+        skip: int | None = None,
+        limit: int | None = None
     ) -> list[Collection]:
         """
         Service method to search collections for a user with validation.
@@ -138,6 +140,8 @@ class CollectionService:
             user_id=user_id,
             query=query.strip(), # Pass the stripped query
             type_filter=type_filter,
+            skip=skip, 
+            limit=limit
         )
         return list(collections)
 
