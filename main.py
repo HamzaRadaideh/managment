@@ -7,6 +7,7 @@ from app.api.routers.notes_routers import router as notes_router
 from app.api.routers.collections_routers import router as collections_router
 from app.api.routers.tags_routers import router as tags_router
 
+from app.api.routers.search_routers import router as search_router
 
 app = FastAPI(
     title="Task & Note Manager API",
@@ -29,6 +30,8 @@ app.include_router(tasks_router)
 app.include_router(notes_router)
 app.include_router(collections_router)
 app.include_router(tags_router)
+
+app.include_router(search_router)
 
 @app.on_event("startup")
 async def on_startup():
