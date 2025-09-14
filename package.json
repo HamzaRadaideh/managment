@@ -10,7 +10,9 @@
     "build": "npm run build:css && npm run build:ts",
     "dev:css": "tailwindcss -i app/static/css/styles.css -o app/static/dist/styles.css --watch",
     "dev:ts": "esbuild app/static/src/main.ts --bundle --sourcemap --outfile=app/static/dist/js/main.js --platform=browser --format=esm --target=es2018 --watch",
-    "dev": "concurrently -k \"npm:dev:css\" \"npm:dev:ts\""
+    "dev": "concurrently -k \"npm:dev:css\" \"npm:dev:ts\"",
+    "clean": "node -e \"require('fs').rmSync('app/static/dist',{recursive:true,force:true})\"",
+    "watch": "concurrently -k \"npm:dev:css\" \"npm:dev:ts\""
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.9",

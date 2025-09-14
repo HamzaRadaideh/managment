@@ -7,7 +7,7 @@
     <title>{% block title %}Task & Note Manager{% endblock %}</title>
 
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+    <link href="{{ url_for('static', path='dist/styles.css') }}" rel="stylesheet">
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
@@ -163,8 +163,8 @@
         {% block content %}{% endblock %}
     </main>
 
-    <script type="module" src="{{ url_for('static', path='js/bundle.js') }}" defer></script>
 
+    <script type="module" src="{{ url_for('static', path='dist/js/main.js') }}" defer></script>
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', path='dist/js/main.js') }}"></script>
