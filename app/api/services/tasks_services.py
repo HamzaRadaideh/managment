@@ -1,4 +1,5 @@
 # app/api/services/tasks_services.py
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from app.api.repositories.tasks_repositories import (
     TaskRepository,
@@ -135,6 +136,48 @@ class TaskService:
         await self.task_repo.delete_task(task)
         # Persist deletion
         await self.task_repo.db.commit()
+
+    async def search_user_tasks(
+        self,
+        user_id: int,
+        query: str,
+        status: Optional[str] = None,
+        priority: Optional[str] = None,
+        collection_id: Optional[int] = None,
+    ) -> list[Task]:
+        """
+        Service method to search tasks for a user with validation.
+
+        Args:
+            user_id: The ID of the user.
+            query: The search term (required).
+            status: Optional status filter.
+            priority: Optional priority filter.
+            collection_id: Optional collection ID filter.
+
+        Returns:
+            A list of Task ORM objects matching the search criteria.
+
+        Raises:
+            HTTPException: If the query is too short.
+        """
+        # Basic validation
+        if not query or len(query.strip()) < 2: # Require at least 2 non-whitespace chars
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Search query must be at least 2 characters long."
+            )
+
+        # Delegate to the repository
+        tasks = await self.task_repo.search_tasks(
+            user_id=user_id,
+            query=query.strip(), # Pass the stripped query
+            status=status,
+            priority=priority,
+            collection_id=collection_id,
+        )
+        return list(tasks)
+
 
 def get_task_service(task_repo: TaskRepository = Depends(get_task_repository)) -> TaskService:
     return TaskService(task_repo)
