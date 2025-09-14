@@ -99,6 +99,66 @@ class TaskRepository:
         await self.db.flush()
 
 
+    async def search_tasks(
+        self,
+        user_id: int,
+        query: str,
+        status: Optional[str] = None,
+        priority: Optional[str] = None,
+        collection_id: Optional[int] = None,
+    ) -> Sequence[Task]:
+        """
+        Search for tasks belonging to a user, with optional filters and text search.
+
+        Args:
+            user_id: The ID of the user whose tasks to search.
+            query: The search term for title/description (case-insensitive, infix).
+            status: Optional filter for task status.
+            priority: Optional filter for task priority.
+            collection_id: Optional filter for collection ID.
+
+        Returns:
+            A sequence of Task objects matching the criteria.
+        """
+        stmt = (
+            select(Task)
+            .where(Task.user_id == user_id)
+            .options(selectinload(Task.tags)) # Ensure tags are loaded
+        )
+
+        # Apply filters
+        if status:
+            stmt = stmt.where(Task.status == status)
+        if priority:
+            stmt = stmt.where(Task.priority == priority)
+        if collection_id:
+            stmt = stmt.where(Task.collection_id == collection_id)
+
+        # Apply text search (case-insensitive infix match)
+        if query:
+            # Basic escaping for LIKE wildcards (optional, for stricter matching)
+            # escaped_query = query.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+            # search_term = f"%{escaped_query}%"
+            # stmt = stmt.where(
+            #     (Task.title.ilike(search_term)) |
+            #     (Task.description.ilike(search_term))
+            # ).params(escape_char='\\') # Requires setting ESCAPE in raw SQL or using func
+
+            # Simpler approach using standard parameter binding (SQLAlchemy handles % correctly)
+            # This allows user input like "10%" to match literally if present.
+            search_term = f"%{query}%"
+            stmt = stmt.where(
+                (Task.title.ilike(search_term)) |
+                (Task.description.ilike(search_term))
+            )
+
+        # Order results (e.g., by last updated, descending)
+        stmt = stmt.order_by(Task.updated_at.desc())
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+
 def get_task_repository(db: AsyncSession = Depends(get_async_session)) -> TaskRepository:
     return TaskRepository(db)
 
