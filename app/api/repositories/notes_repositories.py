@@ -91,6 +91,48 @@ class NoteRepository:
         await self.db.flush()
 
 
+    async def search_notes(
+        self,
+        user_id: int,
+        query: str,
+        collection_id: Optional[int] = None,
+    ) -> Sequence[Note]:
+        """
+        Search for notes belonging to a user, with an optional collection filter and text search.
+
+        Args:
+            user_id: The ID of the user whose notes to search.
+            query: The search term for title/description (case-insensitive, infix).
+            collection_id: Optional filter for collection ID.
+
+        Returns:
+            A sequence of Note objects matching the criteria.
+        """
+        stmt = (
+            select(Note)
+            .where(Note.user_id == user_id)
+            .options(selectinload(Note.tags)) # Ensure tags are loaded
+        )
+
+        # Apply collection filter
+        if collection_id is not None: # Explicitly check for None
+            stmt = stmt.where(Note.collection_id == collection_id)
+
+        # Apply text search (case-insensitive infix match)
+        if query:
+            search_term = f"%{query}%"
+            stmt = stmt.where(
+                (Note.title.ilike(search_term)) |
+                (Note.description.ilike(search_term))
+            )
+
+        # Order results (e.g., by last updated, descending)
+        stmt = stmt.order_by(Note.updated_at.desc())
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
+
 def get_note_repository(db: AsyncSession = Depends(get_async_session)) -> NoteRepository:
     return NoteRepository(db)
 
