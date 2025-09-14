@@ -1,6 +1,6 @@
 # app/api/services/collections_services.py
-from fastapi import Depends, HTTPException
-
+from fastapi import Depends, HTTPException, status
+from typing import Optional
 from app.api.repositories.collections_repositories import (
     CollectionRepository,
     get_collection_repository,
@@ -103,7 +103,43 @@ class CollectionService:
         collection = await self.get_user_collection_by_id(user_id, collection_id)
         # Deleting the collection will cascade to tasks/notes due to the model relationship config
         await self.collection_repo.delete_collection(collection)  # repo deletes+flushes
-        await self.collection_repo.db.commit()   
+        await self.collection_repo.db.commit()
+
+
+    async def search_user_collections(
+        self,
+        user_id: int,
+        query: str,
+        type_filter: str | None = None, # Accepts the string value of CollectionType enum
+    ) -> list[Collection]:
+        """
+        Service method to search collections for a user with validation.
+
+        Args:
+            user_id: The ID of the user.
+            query: The search term (required).
+            type_filter: Optional collection type filter (e.g., 'mixed', 'tasks-only').
+
+        Returns:
+            A list of Collection ORM objects matching the search criteria.
+
+        Raises:
+            HTTPException: If the query is too short.
+        """
+        # Basic validation
+        if not query or len(query.strip()) < 2: # Require at least 2 non-whitespace chars
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Search query must be at least 2 characters long."
+            )
+
+        # Delegate to the repository
+        collections = await self.collection_repo.search_collections(
+            user_id=user_id,
+            query=query.strip(), # Pass the stripped query
+            type_filter=type_filter,
+        )
+        return list(collections)
 
 def get_collection_service(
     collection_repo: CollectionRepository = Depends(get_collection_repository),
