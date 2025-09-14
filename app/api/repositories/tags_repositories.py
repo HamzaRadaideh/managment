@@ -47,6 +47,35 @@ class TagRepository:
         await self.db.delete(tag)
         await self.db.commit()
 
+
+    async def search_tags(
+        self,
+        user_id: int,
+        query: str,
+    ) -> Sequence[Tag]:
+        """
+        Search for tags belonging to a user by title (case-insensitive, infix).
+
+        Args:
+            user_id: The ID of the user whose tags to search.
+            query: The search term for title (case-insensitive, infix).
+
+        Returns:
+            A sequence of Tag objects matching the criteria.
+        """
+        stmt = select(Tag).where(Tag.user_id == user_id)
+
+        # Apply text search (case-insensitive infix match on title)
+        if query:
+            search_term = f"%{query}%"
+            stmt = stmt.where(Tag.title.ilike(search_term))
+
+        # Order results (e.g., by last updated, descending, or alphabetically)
+        stmt = stmt.order_by(Tag.updated_at.desc()) # Or Tag.title.asc()
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+
 # Dependency
 def get_tag_repository(
     db: AsyncSession = Depends(get_async_session)
