@@ -1,7 +1,7 @@
 # app/api/routers/tasks_routers.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
 from app.schemas.contracts.tasks_dtos import TaskCreate, TaskOut, TaskBase
 from app.schemas.models.users_models import User
 from app.schemas.database import get_async_session
@@ -12,6 +12,46 @@ from app.api.services.tasks_services import get_task_service
 from app.api.services.tasks_services import TaskService
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+@router.get("/search", response_model=List[TaskOut]) # Use TaskOut for consistent serialization
+async def search_tasks(
+    q: str = Query(..., alias="q", min_length=2, description="Search term for title/description"),
+    status: str = None,
+    priority: str = None,
+    collection_id: int = None,
+    skip: int = Query(0, ge=0, description="Number of results to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of results to return"), # Reasonable limit
+    current_user: User = Depends(get_current_user),
+    task_service: TaskService = Depends(get_task_service),
+):
+    """
+    Search for tasks belonging to the current user.
+
+    Query Parameters:
+    - q: The search term (required, min 2 chars).
+    - status: Filter by task status.
+    - priority: Filter by task priority.
+    - collection_id: Filter by collection ID.
+    - skip: Number of results to skip (for pagination).
+    - limit: Maximum number of results to return (max 100).
+    """
+    # Call the service method
+    tasks = await task_service.search_user_tasks(
+        user_id=current_user.id,
+        query=q,
+        status=status,
+        priority=priority,
+        collection_id=collection_id,
+    )
+
+    # Apply pagination in-memory (as suggested in the plan)
+    # This is because complex ordering combined with LIKE can make DB-level pagination tricky.
+    paginated_tasks = tasks[skip : skip + limit]
+
+    return paginated_tasks
+
+
 
 @router.get("/", response_model=List[TaskOut])
 async def list_tasks(
