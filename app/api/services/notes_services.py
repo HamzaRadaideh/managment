@@ -1,4 +1,5 @@
 # app/api/services/notes_services.py
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from app.api.repositories.notes_repositories import (
     NoteRepository,
@@ -121,6 +122,41 @@ class NoteService:
         await self.note_repo.delete_note(note)
         # Persist deletion
         await self.note_repo.db.commit()
+
+    async def search_user_notes(
+        self,
+        user_id: int,
+        query: str,
+        collection_id: Optional[int] = None,
+    ) -> list[Note]:
+        """
+        Service method to search notes for a user with validation.
+
+        Args:
+            user_id: The ID of the user.
+            query: The search term (required).
+            collection_id: Optional collection ID filter.
+
+        Returns:
+            A list of Note ORM objects matching the search criteria.
+
+        Raises:
+            HTTPException: If the query is too short.
+        """
+        # Basic validation
+        if not query or len(query.strip()) < 2: # Require at least 2 non-whitespace chars
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Search query must be at least 2 characters long."
+            )
+
+        # Delegate to the repository
+        notes = await self.note_repo.search_notes(
+            user_id=user_id,
+            query=query.strip(), # Pass the stripped query
+            collection_id=collection_id,
+        )
+        return list(notes)
 
 def get_note_service(note_repo: NoteRepository = Depends(get_note_repository)) -> NoteService:
     return NoteService(note_repo)
