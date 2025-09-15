@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -32,27 +32,30 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-async def get_current_user(
-    db: AsyncSession = Depends(get_async_session), 
-    token: str = Depends(oauth2_scheme)
-) -> User: # Explicitly annotate return type
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_async_session)) -> User:
+    # Try Authorization header first
+    token = None
+    auth = request.headers.get("Authorization")
+    if auth and auth.startswith("Bearer "):
+        token = auth.split(" ", 1)[1]
+    # Fallback to HttpOnly cookie
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("user_id")
-        if user_id is None:
-            raise credentials_exception
     except JWTError:
-        raise credentials_exception
-    
-    # This query should return a User INSTANCE
-    result = await db.execute(select(User).where(User.id == int(user_id))) 
-    user: User | None = result.scalar_one_or_none()
-    if user is None:
-        raise credentials_exception
-    return user
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
+    user_id = payload.get("user_id") or payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+
+    result = await db.execute(select(User).where(User.id == int(user_id)))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user

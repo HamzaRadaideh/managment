@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './api';
 import { Toast, debounce, storage } from './utils';
 
 // Main application class

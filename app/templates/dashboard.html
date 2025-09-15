@@ -1,0 +1,26 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="grid gap-6 lg:grid-cols-3">
+    <section class="card">
+        <h2 class="card-title">Global Search</h2>
+        <input id="global-search" class="input" placeholder="Search tasks, notes, tags…" />
+        <div id="search-results" class="mt-4 text-sm text-gray-700"></div>
+    </section>
+    <section class="card lg:col-span-2">
+        <h2 class="card-title">Quick Stats</h2>
+        <!-- Stats will be populated by JS -->
+        <ul id="dashboard-stats" class="mt-2 grid grid-cols-2 gap-3">
+            <li class="stat">Tasks: <b data-stat="tasks">-</b></li>
+            <li class="stat">Notes: <b data-stat="notes">-</b></li>
+            <li class="stat">Collections: <b data-stat="collections">-</b></li>
+            <li class="stat">Completed Tasks: <b data-stat="completed-tasks">-</b></li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/src/pages/dashboard.js"></script>
+{% endblock %}

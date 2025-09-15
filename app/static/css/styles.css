@@ -1,148 +1,109 @@
+/* app/static/styles.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-@layer base {
-    html {
-        font-family: Inter, system-ui, sans-serif;
-    }
-
-    body {
-        @apply bg-secondary-50 text-secondary-900;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        @apply font-semibold text-secondary-900;
-    }
-
-    h1 {
-        @apply text-3xl lg:text-4xl;
-    }
-
-    h2 {
-        @apply text-2xl lg:text-3xl;
-    }
-
-    h3 {
-        @apply text-xl lg:text-2xl;
-    }
-
-    h4 {
-        @apply text-lg lg:text-xl;
-    }
-
-    h5 {
-        @apply text-base lg:text-lg;
-    }
-
-    h6 {
-        @apply text-sm lg:text-base;
-    }
-}
+/* Import any custom fonts if needed */
+/* @import url('https://fonts.googleapis.com/css2?family=...'); */
 
 @layer components {
 
-    /* Button Components */
+    /* Button Styles */
     .btn {
-        @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors;
     }
 
-    .btn-primary {
-        @apply btn bg-primary-600 text-white border-transparent hover:bg-primary-700 focus:ring-primary-500;
+    .btn-outline {
+        @apply px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors;
     }
 
-    .btn-secondary {
-        @apply btn bg-white text-secondary-700 border-secondary-300 hover:bg-secondary-50 focus:ring-secondary-500;
+    .btn-ghost {
+        @apply px-2 py-1 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors;
     }
 
-    .btn-success {
-        @apply btn bg-success-600 text-white border-transparent hover:bg-success-700 focus:ring-success-500;
+    /* Input & Select Styles */
+    .input {
+        @apply w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow;
     }
 
-    .btn-warning {
-        @apply btn bg-warning-600 text-white border-transparent hover:bg-warning-700 focus:ring-warning-500;
+    .select {
+        @apply px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow;
     }
 
-    .btn-danger {
-        @apply btn bg-danger-600 text-white border-transparent hover:bg-danger-700 focus:ring-danger-500;
+    /* Table Styles */
+    .table {
+        @apply w-full border-collapse;
     }
 
-    .btn-sm {
-        @apply px-3 py-1.5 text-xs;
+    .table thead th {
+        @apply text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-3 px-4 border-b;
     }
 
-    .btn-lg {
-        @apply px-6 py-3 text-base;
+    .table tbody td {
+        @apply py-3 px-4 border-b align-top;
     }
 
-    /* Form Components */
-    .form-input {
-        @apply block w-full rounded-lg border-secondary-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
-    }
-
-    .form-select {
-        @apply block w-full rounded-lg border-secondary-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
-    }
-
-    .form-textarea {
-        @apply block w-full rounded-lg border-secondary-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
-    }
-
-    .form-checkbox {
-        @apply rounded border-secondary-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500;
-    }
-
-    .form-radio {
-        @apply border-secondary-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500;
-    }
-
-    .form-label {
-        @apply block text-sm font-medium text-secondary-700 mb-1;
-    }
-
-    .form-error {
-        @apply mt-1 text-sm text-danger-600;
-    }
-
-    .form-help {
-        @apply mt-1 text-sm text-secondary-500;
-    }
-
-    /* Card Components */
+    /* Card Styles */
     .card {
-        @apply bg-white rounded-lg shadow border border-secondary-200;
+        @apply bg-white rounded-2xl shadow p-6;
     }
 
-    .card-header {
-        @apply px-6 py-4 border-b border-secondary-200;
+    .card-title {
+        @apply text-lg font-semibold mb-4;
     }
 
-    .card-body {
-        @apply px-6 py-4;
+    .card-actions {
+        @apply mt-6 flex gap-2 justify-end;
     }
 
-    .card-footer {
-        @apply px-6 py-4 border-t border-secondary-200 bg-secondary-50;
+    /* Link Styles */
+    .link {
+        @apply text-gray-700 hover:text-black transition-colors;
     }
 
-    /* Alert Components */
+    /* Modal Styles (using <dialog>) */
+    .modal {
+        @apply backdrop:bg-black/40 rounded-xl p-0 border-0 shadow-xl;
+        /* Basic dialog styling */
+        /* Tailwind's dialog styling might need adjustments based on browser defaults */
+        /* Ensure modal content has padding */
+    }
+
+    .modal::backdrop {
+        @apply bg-black bg-opacity-50;
+        /* Style the backdrop */
+    }
+
+    /* Toast Styles */
+    .toast {
+        @apply bg-white shadow-lg rounded-lg px-4 py-3 border-l-4 min-w-[250px] max-w-xs;
+        /* Animation handled by JS */
+    }
+
+    .toast-success {
+        @apply border-l-success-500;
+    }
+
+    .toast-error {
+        @apply border-l-danger-500;
+    }
+
+    .toast-info {
+        @apply border-l-primary-500;
+    }
+
+    .toast-warning {
+        @apply border-l-warning-500;
+    }
+
+    /* Stat Item */
+    .stat {
+        @apply p-3 rounded-lg bg-gray-100 text-sm;
+    }
+
+    /* Alert Styles (if used in templates) */
     .alert {
         @apply p-4 rounded-lg border;
-    }
-
-    .alert-success {
-        @apply alert bg-success-50 text-success-800 border-success-200;
-    }
-
-    .alert-warning {
-        @apply alert bg-warning-50 text-warning-800 border-warning-200;
     }
 
     .alert-danger {
@@ -153,91 +114,19 @@
         @apply alert bg-primary-50 text-primary-800 border-primary-200;
     }
 
-    /* Badge Components */
-    .badge {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    }
+    /* Add other alert types as needed */
 
-    .badge-primary {
-        @apply badge bg-primary-100 text-primary-800;
-    }
 
-    .badge-secondary {
-        @apply badge bg-secondary-100 text-secondary-800;
-    }
+    /* Focus Styles (Accessibility) */
+    /* Ensure focus-visible or similar is handled, Tailwind usually provides good defaults */
+    /* You might want to customize focus rings */
+    /* .focus-visible:focus { ... } */
 
-    .badge-success {
-        @apply badge bg-success-100 text-success-800;
-    }
 
-    .badge-warning {
-        @apply badge bg-warning-100 text-warning-800;
-    }
-
-    .badge-danger {
-        @apply badge bg-danger-100 text-danger-800;
-    }
-
-    /* Navigation Components */
-    .nav-link {
-        @apply flex items-center px-4 py-2 text-sm font-medium text-secondary-700 rounded-lg hover:bg-secondary-100 hover:text-secondary-900 transition-colors duration-200;
-    }
-
-    .nav-link.active {
-        @apply bg-primary-100 text-primary-900;
-    }
-
-    /* Modal Components */
-    .modal-overlay {
-        @apply fixed inset-0 bg-black bg-opacity-50 transition-opacity;
-    }
-
-    .modal-container {
-        @apply fixed inset-0 z-50 overflow-y-auto;
-    }
-
-    .modal-content {
-        @apply relative bg-white rounded-lg shadow-xl mx-auto my-8 max-w-lg;
-    }
-
-    /* Loading Components */
-    .spinner {
-        @apply animate-spin rounded-full border-2 border-secondary-300 border-t-primary-600;
-    }
-
-    /* Dropdown Components */
-    .dropdown {
-        @apply relative;
-    }
-
-    .dropdown-content {
-        @apply absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-lg border border-secondary-200 py-1 z-50;
-    }
-
-    .dropdown-item {
-        @apply block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-100 transition-colors duration-200;
-    }
 }
 
-@layer utilities {
-    .text-shadow {
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.10);
-    }
-
-    .text-shadow-md {
-        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
-    }
-
-    .text-shadow-lg {
-        text-shadow: 0 15px 30px rgba(0, 0, 0, 0.11), 0 5px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-}
+/* You can add base styles or utilities outside of layers if needed */
+/* Example: */
+/* body {
+  font-family: 'Your Font', sans-serif;
+} */

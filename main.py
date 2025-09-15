@@ -1,5 +1,7 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -23,26 +25,27 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS (for frontend)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 BASE_DIR = Path(__file__).resolve().parent
 APP_DIR = BASE_DIR / "app"
 STATIC_DIR = APP_DIR / "static"
 TEMPLATES_DIR = APP_DIR / "templates"
 
+app.add_middleware(SessionMiddleware, secret_key="CHANGE_ME_STRONG_SECRET")
+
+# CORS (adjust origins for production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Adjust for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Static Files & Templates ---
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
-
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-# Create ONE templates env with an absolute path and share it
+# Create ONE templates env with an absolute path and share it (existing pattern)
 app.state.templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Include API routers with /api/v1 prefix
@@ -66,5 +69,4 @@ async def health_check():
     return {"status": "ok"}
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

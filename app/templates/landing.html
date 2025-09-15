@@ -1,0 +1,89 @@
+<!-- templates/landing.html -->
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<section class="py-16 text-center">
+    <h1 class="text-3xl font-bold">Manage tasks & notes with tags and collections</h1>
+    <p class="mt-2 text-gray-600">Sign in to access your dashboard.</p>
+    <div class="mt-6 flex justify-center gap-3">
+        <button data-open="login" class="btn">Login</button>
+        <button data-open="register" class="btn-outline">Register</button>
+    </div>
+</section>
+
+<!-- Login Modal -->
+<dialog id="modal-login" class="modal">
+    <form method="post" action="/web/auth/login" class="card" onsubmit="window.attachCsrf(this)">
+        <h2 class="card-title">Login</h2>
+        <!-- Display potential error message -->
+        {% if request.query_params.get('error') %}
+        <div class="alert alert-danger mb-4">
+            <p>{{ request.query_params.get('error') }}</p>
+        </div>
+        {% endif %}
+        <input class="input" name="username" placeholder="Username" required />
+        <input class="input" type="password" name="password" placeholder="Password" required />
+        <!-- Hidden CSRF input - value will be set by JS -->
+        <input type="hidden" name="csrf_token" value="" />
+        <div class="card-actions">
+            <button class="btn" type="submit">Login</button>
+            <button class="btn-ghost" type="button" data-close>Cancel</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Register Modal -->
+<dialog id="modal-register" class="modal">
+    <form method="post" action="/web/auth/register" class="card" onsubmit="window.attachCsrf(this)">
+        <h2 class="card-title">Create account</h2>
+        <!-- Display potential error message -->
+        {% if request.query_params.get('error') %}
+        <div class="alert alert-danger mb-4">
+            <p>{{ request.query_params.get('error') }}</p>
+        </div>
+        {% endif %}
+        <input class="input" name="username" placeholder="Username" required />
+        <input class="input" name="email" type="email" placeholder="Email" required />
+        <input class="input" name="fname" placeholder="First Name" required /> <!-- Added fname/lname -->
+        <input class="input" name="lname" placeholder="Last Name" required />
+        <input class="input" type="password" name="password" placeholder="Password" required />
+        <!-- Hidden CSRF input - value will be set by JS -->
+        <input type="hidden" name="csrf_token" value="" />
+        <div class="card-actions">
+            <button class="btn" type="submit">Register</button>
+            <button class="btn-ghost" type="button" data-close>Cancel</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const bySel = (s, r = document) => r.querySelector(s);
+
+    // Function to attach CSRF token from meta tag to form hidden input
+    window.attachCsrf = (form) => {
+        const meta = document.querySelector('meta[name="csrf"]');
+        if (meta) {
+            const input = form.querySelector('input[name="csrf_token"]');
+            if (input) input.value = meta.content;
+        }
+    };
+
+    // Simple event delegation for modal open/close
+    addEventListener('click', (e) => {
+        const openBtn = e.target.closest('[data-open]');
+        if (openBtn) {
+            const modalId = openBtn.dataset.open;
+            const modal = bySel('#modal-' + modalId);
+            if (modal) modal.showModal();
+        }
+
+        const closeBtn = e.target.closest('[data-close]');
+        if (closeBtn) {
+            const modal = closeBtn.closest('dialog');
+            if (modal) modal.close();
+        }
+    });
+</script>
+{% endblock %}

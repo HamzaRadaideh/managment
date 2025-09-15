@@ -1,0 +1,45 @@
+<!-- templates/tasks.html -->
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between">
+    <h1 class="text-xl font-semibold">Tasks</h1>
+    <button id="create-task-btn" class="btn">New Task</button>
+</div>
+<div class="mt-4 flex gap-3">
+    <input id="task-search" class="input" placeholder="Search tasks…" />
+    <select id="task-status-filter" class="select">
+        <option value="">All Statuses</option>
+        <option value="todo">To Do</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+    </select>
+    <select id="task-priority-filter" class="select">
+        <option value="">All Priorities</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+    </select>
+</div>
+<table class="table mt-4">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th class="text-right">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="tasks-rows">
+        <!-- Rows will be populated by JS -->
+        <tr>
+            <td colspan="4" class="text-center py-4 text-gray-500">Loading tasks...</td>
+        </tr>
+    </tbody>
+</table>
+<!-- Modals for Create/Edit/Delete can go here or be handled dynamically -->
+{% endblock %}
+
+{% block scripts %}
+<script defer src="/static/src/pages/tasks.js"></script>
+{% endblock %}
